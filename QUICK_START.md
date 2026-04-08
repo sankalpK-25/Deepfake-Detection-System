@@ -1,214 +1,106 @@
-# Quick Start Guide - Frontend-Backend Integration
+# Quick Start
+
+This is the fastest reliable way to run the project in its current state.
+
+## Recommended flow
+
+Use the built frontend served by Flask. This matches how `backend/app.py` is configured and how `main.py` starts the app.
 
 ## Prerequisites
-- Python 3.8+
-- Node.js 16+
-- pip and npm
-- Git (optional)
 
-## Setup & Run in 5 Minutes
+- Python 3.10+
+- Node.js 18+
+- npm
 
-### Step 1: Install Backend Dependencies
+## Setup
+
+### 1. Create a virtual environment
+
 ```powershell
-# Navigate to project root
-cd d:\python\DeepFake-Detection-System-Draft-4
-
-# Create and activate virtual environment
 python -m venv venv
 .\venv\Scripts\Activate.ps1
+```
 
-# Install requirements (includes new flask-cors)
+### 2. Install backend dependencies
+
+```powershell
 pip install -r requirements.txt
 ```
 
-### Step 2: Install Frontend Dependencies
-```powershell
-# In a new terminal, navigate to frontend
-cd d:\python\DeepFake-Detection-System-Draft-4\frontend
+### 3. Install and build the frontend
 
-# Install npm packages
+```powershell
+cd frontend
 npm install
+npm run build
+cd ..
 ```
 
-### Step 3: Start Backend Server
+### 4. Run the app
+
 ```powershell
-# From project root with venv activated
-python -m backend.app
+python main.py
 ```
 
-You should see:
-```
- * Running on http://127.0.0.1:5000
-✓ Model loaded from .keras format
-```
+Open `http://127.0.0.1:5000`.
 
-### Step 4: Start Frontend Development Server
+## What to expect
+
+- Flask starts on port `5000`
+- The homepage is served from `frontend/build/index.html`
+- Uploading an image sends `POST /api/predict`
+- The result includes verdict, raw prediction, confidence, and filename
+
+## Quick API check
+
+If the server is running, this should return a validation error because no file was sent:
+
 ```powershell
-# From frontend directory (new terminal)
+curl -X POST http://127.0.0.1:5000/api/predict
+```
+
+Expected shape:
+
+```json
+{
+  "error": "No image uploaded"
+}
+```
+
+## Frontend development note
+
+You can still run:
+
+```powershell
+cd frontend
 npm run dev
 ```
 
-You should see:
-```
-  VITE v... ready in ... ms
+But the current frontend code uses `fetch('/api/predict')`, and `vite.config.ts` does not define a proxy to Flask. End-to-end prediction testing should therefore be done through `python main.py` unless you add a proxy or change the request URL.
 
-  ➜  Local:   http://localhost:5173/
-```
+## Supported uploads today
 
-### Step 5: Open Browser
-- Visit `http://localhost:5173`
-- Upload an image file
-- Wait for prediction results
+Reliable path:
 
-## What Changed vs. Before
+- Images: `jpg`, `jpeg`, `png`, `gif`, `bmp`
 
-### Before (Mock Data)
-```
-User uploads image → Frontend simulates 3 second delay → Shows random results
-```
+Current limitation:
 
-### After (Real Integration)
-```
-User uploads image → Sent to Flask backend → Model processes image → 
-Real prediction returned → Frontend displays actual result
-```
+- The backend allow-list also includes `mp4`, `avi`, and `mov`, but the actual preprocessing/prediction path is image-based right now
 
-## Testing the Integration
+## Common issues
 
-### Test Image 1: Verify Real Image
-1. Upload a real photo of a person
-2. Expected: Should show "AUTHENTIC" or "INCONCLUSIVE" with high confidence
+### `TemplateNotFound: index.html`
 
-### Test Image 2: Verify Error Handling
-1. Try uploading a text file (.txt) or unsupported format
-2. Expected: Error notification appears
+Run `npm run build` inside `frontend/` first.
 
-### Test Image 3: Verify UI Responsiveness
-1. Upload image
-2. While analyzing, drag-and-drop another file
-3. Expected: Second upload is ignored until first completes
+### `Prediction failed`
 
-## API Testing (Optional)
+Check that:
 
-### Manual API Test with curl
-```powershell
-# Open new PowerShell and run:
-$file = "path/to/test_image.jpg"
-curl -X POST -F "image=@$file" http://localhost:5000/api/predict
+- `backend/model/deepfake_model.keras` or `backend/model/deepfake_model.h5` exists
+- the uploaded file is a readable image
 
-# Expected response:
-# {
-#   "verdict": "DEEPFAKE DETECTED" or "AUTHENTIC",
-#   "prediction": "FAKE" or "REAL" or "UNCERTAIN",
-#   "confidence": 85.5,
-#   "isFake": true/false,
-#   "filename": "test_image.jpg"
-# }
-```
+### Frontend works but API does not from Vite
 
-### Manual API Test with Python
-```python
-import requests
-
-with open('path/to/test_image.jpg', 'rb') as f:
-    files = {'image': f}
-    response = requests.post('http://localhost:5000/api/predict', files=files)
-    print(response.json())
-```
-
-## Browser Console Check
-
-After uploading an image, open browser DevTools (F12) and check:
-
-1. **Network Tab**: 
-   - Should see POST request to `http://localhost:5000/api/predict`
-   - Response status should be 200 OK
-
-2. **Console Tab**:
-   - Should NOT see CORS errors
-   - Should NOT see 404 errors
-   - Errors would appear as red messages
-
-3. **Application Tab**:
-   - Check localStorage for any cached results
-
-## Troubleshooting
-
-### "Cannot POST /api/predict"
-- ❌ Backend not running or wrong port
-- ✅ Check backend is running on `http://localhost:5000`
-
-### CORS Error in Console
-- ❌ Backend CORS not configured properly
-- ✅ Verify `flask_cors` is installed: `pip list | grep flask-cors`
-- ✅ Verify `CORS(app, resources=...)` in `backend/app.py`
-
-### "File request.files["image"] not found"
-- ❌ Frontend not sending file in multipart/form-data
-- ✅ Check `formData.append('image', file)` in `App.tsx`
-
-### Model Load Error
-- ❌ Model file missing or corrupted
-- ✅ Check `backend/model/deepfake_model.keras` exists
-- ✅ If missing, place model file or rebuild
-
-### Prediction Takes Too Long
-- ❌ System is slow or model is loading first time
-- ✅ First prediction takes 10-30 seconds (model loading)
-- ✅ Subsequent predictions are faster (model cached)
-- ✅ Check system resources (RAM: 4GB+, GPU preferred)
-
-## File Locations for Reference
-
-```
-D:\python\DeepFake-Detection-System-Draft-4\
-├── backend/
-│   ├── app.py                    [MODIFIED] ← Flask server with API endpoint
-│   ├── model/
-│   │   ├── predict.py           [PRESERVED] ← Prediction logic (thresholds unchanged)
-│   │   ├── deepfake_model.keras [UNTOUCHED] ← Model weights
-│   │   └── deepfake_model.h5    [UNTOUCHED] ← Model weights (backup)
-│   └── utils/
-│       └── preprocess.py         [PRESERVED] ← Image preprocessing
-├── frontend/
-│   ├── src/
-│   │   ├── App.tsx              [MODIFIED] ← Handles API calls, no more mock data
-│   │   └── components/
-│   │       └── ResultsSection.tsx [MODIFIED] ← Handles real API response
-│   └── package.json
-├── requirements.txt              [MODIFIED] ← Added flask-cors
-└── FRONTEND_BACKEND_INTEGRATION.md [NEW] ← Integration documentation
-```
-
-## Key Integration Points
-
-| Component | URL | Method | Purpose |
-|-----------|-----|--------|---------|
-| Frontend | `http://localhost:5173` | - | React dev server |
-| Backend | `http://localhost:5000` | - | Flask API server |
-| API Endpoint | `/api/predict` | POST | Upload image, get prediction |
-
-## Model Accuracy Guaranteed
-
-✅ **Preserved**:
-- Thresholds: LOW=0.45, HIGH=0.65
-- Confidence calculations
-- Image preprocessing (299x299 + Xception normalization)
-- Model weights and architecture
-- Prediction logic
-
-✅ **No Changes**:
-- `backend/model/predict.py`
-- `backend/model/deepfake_model.h5/.keras`
-- `backend/utils/preprocess.py`
-
-## After Integration Works
-
-You can now:
-1. ✅ Upload images from frontend
-2. ✅ Get real model predictions
-3. ✅ Display results with actual confidence scores
-4. ✅ Handle errors gracefully
-5. ✅ Use all UI features with real data
-
-Happy detecting! 🚀
+That is expected with the current config unless you add a dev proxy.

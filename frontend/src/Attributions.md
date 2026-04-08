@@ -1,3 +1,3 @@
-This Figma Make file includes components from [shadcn/ui](https://ui.shadcn.com/) used under [MIT license](https://github.com/shadcn-ui/ui/blob/main/LICENSE.md).
+This frontend includes components inspired by and built with libraries from the React ecosystem, including [shadcn/ui](https://ui.shadcn.com/) components used under the [MIT License](https://github.com/shadcn-ui/ui/blob/main/LICENSE.md).
 
-This Figma Make file includes photos from [Unsplash](https://unsplash.com) used under [license](https://unsplash.com/license).
+Project visuals may also include placeholder imagery originally sourced from [Unsplash](https://unsplash.com), which is available under the [Unsplash License](https://unsplash.com/license).
