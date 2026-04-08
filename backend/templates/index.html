@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Deepfake Detection System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 400px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-style: solid;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>Deepfake Detection System</h1>
+
+    <form id="uploadForm">
+        <input type="file" id="imageInput" required>
+        <br><br>
+        <button type="submit">Analyze Image</button>
+    </form>
+
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+document.getElementById("uploadForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const imageInput = document.getElementById("imageInput");
+    const resultDiv = document.getElementById("result");
+
+    const formData = new FormData();
+    formData.append("image", imageInput.files[0]);
+
+    resultDiv.innerHTML = "Analyzing...";
+
+    const response = await fetch("/predict", {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+        resultDiv.innerHTML = "Error: " + data.error;
+    } else {
+        resultDiv.innerHTML = `
+            <strong>Prediction:</strong> ${data.prediction}<br>
+            <strong>Confidence:</strong> ${data.confidence}%
+        `;
+    }
+});
+</script>
+
+</body>
+</html>
