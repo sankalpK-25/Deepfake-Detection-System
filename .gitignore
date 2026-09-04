@@ -44,3 +44,7 @@ Thumbs.db
 
 # Large local archives
 *.zip
+
+/test_images
+/dataset
+/archive (1).zip
