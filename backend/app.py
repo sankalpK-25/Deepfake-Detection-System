@@ -1,5 +1,7 @@
 import os
 
+os.environ.setdefault("TF_USE_LEGACY_KERAS", "1")
+
 from flask import Flask, request, jsonify, render_template, send_from_directory
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
